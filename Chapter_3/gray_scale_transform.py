@@ -69,7 +69,7 @@ def _num2bit(num):
 	b = np.zeros(8)
 	i = 0
 
-	while num > 0:
+	while num > 0 and i < 8:
 		b[i] = num % 2 
 		num = int(num / 2)
 		i += 1
@@ -125,6 +125,10 @@ def hist_equal(img):
 		ax3.imshow(Image.fromarray(im2.reshape(height, width)))
 		plt.show()
 
+	else:
+		print("It is not a gray image!")
+		return False
+
 # algrithom of blurry
 def blurry(img, model = "mean", size = 3, sigma = 1):
 	if type(np.array([1, 2])) != type(img):
@@ -152,11 +156,62 @@ def blurry(img, model = "mean", size = 3, sigma = 1):
 
 			return res
 
+		else:
+			print("Don't have this model!")
+			exit()
+
 		for h in range(height):
 			for w in range(width):
 				res[h][w] = np.dot(_tmp[h:h+2*n+1, w:w+2*n+1].flatten(), kernal.flatten())
 
 		return res 
+
+	else:
+		pass
+
+# the algrithom of sharpen, contains sobel and laplacian operator
+def sharpen(img, model = "sobel"):
+	if type(np.array([1, 2])) != type(img):
+		img = np.array(img)
+
+	if 2 == len(img.shape):
+		height, width = img.shape
+		_tmp = np.zeros((height + 2, width + 2))
+		_tmp[1: 1 + height, 1: 1 + width] = img
+		res = np.zeros((height, width))
+
+		if "sobel" == model.lower():
+			kernalx = np.array([[-1, 0, 1],
+								[-2, 0, 2],
+								[-1, 0, 1]])
+			kernaly = np.array([[-1, -2, -1],
+								[0, 0, 0],
+								[1, 2, 1]])
+
+			for h in range(height):
+				for w in range(width):
+					res[h][w] = abs(np.dot(_tmp[h: h + 3, w: w + 3].flatten(), kernalx.flatten())) +\
+						abs(np.dot(_tmp[h: h + 3, w: w + 3].flatten(), kernaly.flatten()))
+
+			return res+128 
+
+		elif "laplacian" == model.lower():
+			kernal = np.array([[-1, -1, -1],
+								[-1, 8, -1],
+								[-1, -1, -1]])
+			for h in range(height):
+				for w in range(width):
+					res[h][w] = abs(np.dot(_tmp[h: h + 3, w: w + 3].flatten(), kernal.flatten()))
+
+			return res + 128 
+
+		else:
+			print("Don't have this model!")
+			exit()
+
+	else:
+		print("It's not a gray image!")
+		exit()
 
 def show_img(img):
 	if type(np.array([1, 2])) == type(img):
@@ -167,11 +222,14 @@ def show_img(img):
 
 def main():
 	dir_path = os.path.join(os.path.abspath('.'), "../src/")
-	path = os.path.join(dir_path, "lena.jpg")
+	path = os.path.join(dir_path, "PCB_NULL.jpg")
 	img = open_img(path, "gray")
 	# gray_separate(img)
 	# hist_equal(img)
-	img2 = Image.fromarray(blurry(img, "median", size = 5))
+	img2 = Image.fromarray(blurry(img, "gauss", size = 5))
+	img3 = Image.fromarray(sharpen(img2, "sobel"))
+	img4 = (np.array(img) + np.array(img3) - 128)
+	# gray_separate(img3)
 	show_img(img2)
 
 if __name__ == '__main__':
