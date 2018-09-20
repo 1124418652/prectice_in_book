@@ -7,10 +7,10 @@
 """
 import math
 import numpy as np 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-
-def cal_guass(size, sigma = 1):
+def cal_gauss(size, sigma = 1):
 	n = (size - 1) / 2
 	kernal = np.zeros((size, size))
 
@@ -25,7 +25,7 @@ def cal_guass(size, sigma = 1):
 	return kernal
 
 def main():
-	kernal = cal_guass(3, 0.840896)
+	kernal = cal_guass(5, 1)
 	print(kernal)
 
 if __name__ == '__main__':

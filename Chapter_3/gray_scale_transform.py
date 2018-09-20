@@ -13,9 +13,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import *
 from math import pow
+from gauss import cal_gauss
 from scipy.interpolate import interp1d
 
-dir_path = os.path.join(os.path.abspath('.'), "../src/")
 
 def open_img(path, type = "RGB"):
 	img = Image.open(path)
@@ -125,6 +125,39 @@ def hist_equal(img):
 		ax3.imshow(Image.fromarray(im2.reshape(height, width)))
 		plt.show()
 
+# algrithom of blurry
+def blurry(img, model = "mean", size = 3, sigma = 1):
+	if type(np.array([1, 2])) != type(img):
+		img = np.array(img)
+
+	if 2 == len(img.shape):
+		n = int((size - 1) / 2)
+		height, width = img.shape 
+		_tmp = np.zeros((height + 2 * n, width + 2 * n))
+		res = np.zeros((height, width))
+		_tmp[n:n+height, n:n+width] = img 
+
+		if "mean" == model.lower():
+			kernal = np.ones((size, size)) * 1 / (size * size)
+		
+		elif "gauss" == model.lower():
+			kernal = cal_gauss(size, sigma)
+			kernal = kernal / kernal.sum()
+
+		elif "median" == model.lower():
+			for h in range(height):
+				for w in range (width):
+					_x = sorted(_tmp[h:h+2*n+1, w:w+2*n+1].flatten())
+					res[h][w] = _x[int((size * size + 1) / 2)]
+
+			return res
+
+		for h in range(height):
+			for w in range(width):
+				res[h][w] = np.dot(_tmp[h:h+2*n+1, w:w+2*n+1].flatten(), kernal.flatten())
+
+		return res 
+
 def show_img(img):
 	if type(np.array([1, 2])) == type(img):
 		img = Image.fromarray(img)
@@ -133,10 +166,13 @@ def show_img(img):
 	plt.show()
 
 def main():
+	dir_path = os.path.join(os.path.abspath('.'), "../src/")
 	path = os.path.join(dir_path, "lena.jpg")
 	img = open_img(path, "gray")
 	# gray_separate(img)
-	hist_equal(img)
+	# hist_equal(img)
+	img2 = Image.fromarray(blurry(img, "median", size = 5))
+	show_img(img2)
 
 if __name__ == '__main__':
 	main()
