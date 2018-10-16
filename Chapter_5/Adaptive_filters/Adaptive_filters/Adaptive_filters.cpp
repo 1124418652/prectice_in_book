@@ -5,6 +5,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "filtersDefine.h"
+#include "../../noice/noice/noiceDefine.h"
 
 using namespace std;
 using namespace cv;
@@ -21,13 +22,17 @@ int main()
 		exit(1);
 	}
 	
-	resize(img, img, Size(640, 480));
+	//resize(img, img, Size(640, 480));
 	cvtColor(img, img, CV_BGR2GRAY);
 
+	
 	Mat noice(img.size(), img.type());
 	RNG rng(time(NULL));
 	rng.fill(noice, RNG::NORMAL, 0, 10);
 	add(img, noice, img);
+
+	//noice::spNoice(img, img,0.9);
+
 
 	//filter::adaptiveLocalFilter(img, tmp, 100, 5);
 
@@ -40,7 +45,7 @@ int main()
 	}
 	*/
 
-	filter::adaptiveMedianFilter(img, tmp);
+	filter::adaptiveLocalFilter(img, tmp, 100, 5);
 	imshow("img", img);
 	imshow("dest", tmp);
 	//imshow("img", img);
