@@ -45,7 +45,7 @@ void filter::adaptiveLocalFilter(const Mat &src, Mat &dest, double sigma, int si
 				}
 			}
 			variable /= (size * size);
-			variable = variable > sigma ? sigma / variable : 1;
+			variable = variable > sigma ? sigma / variable : 1;        // 当 sigma >= variable 时，比例为1
 			temp = src.at<uchar>(i, j) - variable * (src.at<uchar>(i, j) - mean);
 			if (temp < 0)
 				dest.at<uchar>(i, j) = 0;
@@ -56,7 +56,65 @@ void filter::adaptiveLocalFilter(const Mat &src, Mat &dest, double sigma, int si
 	}
 }
 
-void filter::adaptiveMedianFilter(const Mat &src, Mat &dest)
+int filter::adaptiveMedian(const Mat &src, int row, int col, int kernalSize, int maxSize)
 {
+	int half_kernalSize = kernalSize / 2;
+	int arrSize = kernalSize * kernalSize;                             // 选择区域数据的个数
+	int min, max, med, zxy = src.at<uchar>(row, col);
+	int *arrIn = new int[arrSize];
+	int k = 0;                                                         // 记录 arrIn 的索引
 
+	for (int i = -half_kernalSize; i <= half_kernalSize; i++)
+	{
+		for (int j = -half_kernalSize; j <= half_kernalSize; j++)
+		{
+			arrIn[k] = (int)src.at<uchar>(row + i, col + j);
+			k++;
+		}
+	}
+
+	listSort(arrIn, arrSize);
+	min = arrIn[0];
+	max = arrIn[arrSize - 1];
+	med = arrIn[arrSize / 2];
+	delete[] arrIn;
+
+	if (med > min && med < max)         // process A
+	{
+		// turn to Process B
+		if (zxy > min && zxy < max)
+			return zxy;
+		else
+			return med;
+	}
+	else
+	{
+		if (kernalSize < maxSize)
+		{
+			kernalSize += 2;
+			return adaptiveMedian(src, row, col, kernalSize, maxSize); // 递归执行进程 A
+		}
+		else
+			return med;
+	}
+}
+
+void filter::adaptiveMedianFilter(const Mat &src, Mat &dest, int maxSize)
+{
+	int size = 3;                      // 初始核矩阵的尺寸
+	int half_maxSize = maxSize / 2;
+	int row = src.rows;
+	int col = src.cols;
+	Mat tmp;
+	dest.create(src.size(), src.type());
+	cv::copyMakeBorder(src, tmp, half_maxSize, half_maxSize, half_maxSize,  
+		half_maxSize, cv::BorderTypes::BORDER_ISOLATED);              // 照最大核矩阵对原始图片进行填充
+	
+	for (int i = half_maxSize; i < row + half_maxSize; i++)
+	{
+		for (int j = half_maxSize; j < col + half_maxSize; j++)
+		{
+			dest.at<uchar>(i - half_maxSize, j - half_maxSize) = adaptiveMedian(tmp, i, j, 3, maxSize);
+		}
+	}
 }

@@ -29,10 +29,21 @@ int main()
 	rng.fill(noice, RNG::NORMAL, 0, 10);
 	add(img, noice, img);
 
-	filter::adaptiveLocalFilter(img, tmp, 100, 5);
+	//filter::adaptiveLocalFilter(img, tmp, 100, 5);
 
-	imshow("dest", tmp);
+	/** ≤‚ ‘≈≈–ÚÀ„∑®
+	int arrIn[] = { 2,1,5,3,6,5,9,7 };
+	filter::listSort(arrIn, 8, SELECT);
+	for (int i = 0; i < 8; i++)
+	{
+		cout << arrIn[i] << endl;
+	}
+	*/
+
+	filter::adaptiveMedianFilter(img, tmp);
 	imshow("img", img);
+	imshow("dest", tmp);
+	//imshow("img", img);
 	waitKey(0);
 
     return 0;
