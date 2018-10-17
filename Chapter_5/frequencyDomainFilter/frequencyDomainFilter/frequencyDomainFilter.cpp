@@ -21,10 +21,11 @@ int main()
 		exit(1);
 	}
 
-	opencvFilter(img, dest, spectrum,10);
+	opencvFilter(img, dest, spectrum,60, 0);
 
 	namedWindow("Source Image");
 	imshow("Source Image", img);
+	imshow("spectrum", spectrum);
 	waitKey(0);
 
 
